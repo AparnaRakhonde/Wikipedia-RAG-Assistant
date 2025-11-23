@@ -18,8 +18,10 @@ def get_wikipedia_content(topic):
     try:
         page = wikipedia.page(topic)
         return page.content
-    except (wikipedia.exceptions.PageError, wikipedia.exceptions.DisambiguationError):
-        return None
+    except wikipedia.exceptions.PageError as e:
+        return f"PageError: {str(e)}"
+    except wikipedia.exceptions.DisambiguationError as e:
+        return f"DisambiguationError: {str(e)}"
     
 
 def split_text(text, chunk_size=1000, chunk_overlap=30):
@@ -49,5 +51,17 @@ def retrieve_chunks(query, chunks,embeddings, index, k=3):
 
 
 def answer_question(question, context):
-    result = qa_pipeline(question=question, context=context)
-    return result['answer']
+    try:
+        result = qa_pipeline(question=question, context=context)
+        answer = result.get("answer", "").strip()
+
+        # If answer is empty or not meaningful → fallback summary
+        if not answer or len(answer.split()) < 2:
+            sentences = context.split(".")
+            fallback = ". ".join(sentences[:3]).strip() + "."
+            return fallback
+
+        return answer
+
+    except Exception as e:
+        return f"❌ Error generating answer: {str(e)}"
