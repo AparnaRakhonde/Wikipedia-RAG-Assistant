@@ -55,7 +55,7 @@ def answer_question(question, context):
         result = qa_pipeline(question=question, context=context)
         answer = result.get("answer", "").strip()
 
-        # If answer is empty or not meaningful → fallback summary
+        
         if not answer or len(answer.split()) < 2:
             sentences = context.split(".")
             fallback = ". ".join(sentences[:3]).strip() + "."
